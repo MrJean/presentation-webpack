@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Introduction to Webpack - JWorks - Jan De Wilde</title>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/ordina.css" id="theme">
+    <link rel="stylesheet" href="css/custom.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <script src="js/head.min.js"></script>
+    <!--Add support for earlier versions of Internet Explorer -->
+    <!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section>
+                <h1>Introduction to Webpack</h1>
+                <h3>Module bundler</h3>
+                <img src="img/jworks-logo.png" style="vertical-align: bottom;" width="22.5%"/>
+            </section>
+
+            <section>
+                <h2>Hi, my name is Jan.</h2>
+                <p>
+                    Frontend Developer<br />
+                    Ordina Belgium<br />
+                    @Mr_Jean<br />
+                    https://github.com/MrJean
+                </p>
+            </section>
+
+            <!-- **********
+                EDIT FROM HERE
+            ********** -->
+            <section>
+                <h2>Topics</h2>
+                <p>Introduction</p>
+                <p>Configuration</p>
+                <p>Integration with AngularJS &amp; React</p>
+
+                <aside class="notes">
+                    <p><strong>Introduction</strong>: We'll cover the basic things you need to know about webpack.</p>
+                    <p><strong>Configuration</strong>: We'll take a look at loaders, production builds, using @, images, fonts, &hellip;</p>
+                    <p><strong>Integration with framework</strong>: How to integrate with AngularJS and React</p>
+                </aside>
+            </section>
+
+            <section>
+                <section data-background="#DF6F0C">
+                    <h2 style="color: #fff;">Introduction</h2>
+                </section>
+
+                <section>
+                    <h2>webwhat?</h2>
+                    <ul>
+                        <li>Like Gulp or Grunt, but different</li>
+                        <li>Does more with less</li>
+                        <li>Fairly easy configuration</li>
+                        <li>Bundles files</li>
+                        <li>Uses JavaScript modules</li>
+                        <li>Reduces the amount of (XHR) requests</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Basics</h2>
+                    <pre><code data-trim>
+$ npm install webpack -g
+$ webpack app.js bundle.js
+$ webpack app.js bundle.js --watch
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Require a file</h2>
+                    <pre><code data-trim>
+require('./filename') // CommonJS syntax
+                    </code></pre>
+                    <pre><code data-trim>
+import {filename} from './filename' // ES6 syntax
+                    </code></pre>
+                    <p>Relative referral to filename.js</p>
+                </section>
+
+                <section>
+                    <h2>Example 1</h2>
+                    <p>world.js</p>
+                    <pre><code data-trim>
+module.exports = 'world!';
+                    </code></pre>
+                    <p>hello.js</p>
+                    <pre><code data-trim>
+var world = require('./world');
+document.write('Hello' + world);
+                    </code></pre>
+                    <p>Run</p>
+                    <pre><code data-trim>
+$ webpack hello.js bundle.js
+                    </code></pre>
+
+                    <aside class="notes">Example 01</aside>
+                </section>
+
+                <section>
+                    <h2>Example 2</h2>
+                    <p>world.js</p>
+                    <pre><code data-trim>
+module.exports = {
+    sayWorld: function() {
+        return 'world!';
+    }
+}
+                    </code></pre>
+                    <p>hello.js</p>
+                    <pre><code data-trim>
+var world = require('./world');
+document.write('Hello ' + world.sayWorld());
+                    </code></pre>
+                    <p>Run</p>
+                    <pre><code data-trim>
+$ webpack hello.js bundle.js
+                    </code></pre>
+
+                    <aside class="notes">Example 02</aside>
+                </section>
+
+            <!-- </section>
+
+            <section> -->
+
+                <section>
+                    <h2><code>webpack-dev-server</code></h2>
+                    <ul>
+                        <li>Use when you need HTTP</li>
+                        <li>Sets up webserver</li>
+                        <li>Serves files virtually (not from disk)</li>
+                        <li>Reloads browser when files change</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2><code>webpack-dev-server</code></h2>
+                    <p>Install</p>
+                    <pre><code data-trim>
+$ npm install webpack-dev-server –g
+                    </code></pre>
+                    <p>Run</p>
+                    <pre><code data-trim>
+$ webpack-dev-server
+                    </code></pre>
+                    <p>Needs <code>webpack.config.js</code> file</p>
+                </section>
+
+                <section>
+                    <h2><code>webpack-dev-server</code></h2>
+                    <p>Default location gives status window with automatic reload</p>
+                    <pre><code data-trim>
+http://localhost:8080/webpack-dev-server/
+                    </code></pre>
+                    <p>Just the app and no reload</p>
+                    <pre><code data-trim>
+http://localhost:8080
+                    </code></pre>
+                    <p>Enable reload on <code>http://localhost:8080</code></p>
+                    <pre><code data-trim>
+$ webpack-dev-server --inline
+                    </code></pre>
+                </section>
+
+            </section>
+
+            <section>
+
+                <section data-background="#DF6F0C">
+                    <h2 style="color: #fff;">Configuration</h2>
+                </section>
+
+                <section>
+                    <h2><code>webpack.config.js</code></h2>
+                    <ul>
+                        <li>Plain JavaScript</li>
+                        <li>Use require to include modules or plugins</li>
+                        <li>Write own custom logic</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2><code>webpack.config.js</code></h2>
+                    <pre><code data-trim>
+module.exports = {
+    entry: ["./hello"],
+    output: {
+        filename: "bundle.js"
+    }
+}
+                    </code></pre>
+
+                    <aside class="notes">A basic webpack config that works for a flat structure.</aside>
+                </section>
+
+                <section>
+                    <h2>Flat structure</h2>
+                    <pre><code data-trim>
+hello.js
+world.js
+index.html
+bundle.js
+webpack.config.js
+                    </code></pre>
+
+                    <aside class="notes">This flat structure is not what you want when going to production.</aside>
+                </section>
+
+                <section>
+                    <h2>More structure</h2>
+                    <pre><code data-trim>
+/js
+    hello.js
+    world.js
+/public
+    index.html
+/build
+    /js
+        bundle.js
+webpack.config.js
+                    </code></pre>
+
+                    <aside class="notes">You'll want a more structured one, like this for example. Do use this kind of structure, we can add extra parameters to our configuration file.</aside>
+                </section>
+
+                <section>
+                    <h2><code>entry</code></h2>
+                    <pre><code data-trim>
+var path = require('path');
+
+module.exports = {
+    entry: ["./utils", "./hello"]
+}
+                    </code></pre>
+                    <p>The entry files webpack will use.</p>
+                </section>
+
+                <section>
+                    <h2><code>output</code></h2>
+                    <pre><code data-trim>
+var path = require('path');
+
+module.exports = {
+    output: {
+        path: path.resolve('build/js/'),
+        publicPath: '/public/assets/js/',
+        filename: "bundle.js"
+    }
+}
+                    </code></pre>
+                    <p><code>path</code>: location where webpack will build the files.</p>
+                    <p><code>publicPath</code>: location where webpack webserver serves files from, each request will be mapped to look up in <code>build/js/</code>.</p>
+
+                    <aside class="notes">
+                        Note that for production builds, the files will need to be placed to the folder <code>/public/assets/</code>, or you use an entire other structure.
+                    </aside>
+                </section>
+
+                <section>
+                    <h2><code>context</code></h2>
+                    <pre><code data-trim>
+var path = require('path');
+
+module.exports = {
+    context: path.resolve('js')
+}
+                    </code></pre>
+                    <p>The base directory for resolving the entry option</p>
+
+                    <aside class="notes">The defined context folder is where webpack will look up the files requested. This is an absolute path.</aside>
+                </section>
+
+                <section>
+                    <h2><code>devServer</code></h2>
+                    <pre><code data-trim>
+var path = require('path');
+
+module.exports = {
+    devServer: {
+        contentBase: 'public'
+    }
+}
+                    </code></pre>
+                    <p><code>contentBase</code>: Defines the root of the server.</p>
+                </section>
+
+                <section>
+                    <h2><code>resolve</code></h2>
+                    <pre><code data-trim>
+var path = require('path');
+
+module.exports = {
+    resolve: {
+        extensions: ['', '.js']
+    }
+}
+                    </code></pre>
+                    <p>Options affecting the resolving of modules.</p>
+
+                    <aside class="notes">
+                        <p><code>extensions</code> enables you to discard the file type from your require. E.g. <code>require('./filename.js'), require('./filename')</code></p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2><code>webpack.config.js</code></h2>
+                    <pre><code data-trim>
+var path = require('path');
+
+module.exports = {
+    context: path.resolve('js'),
+    entry: ["./utils", "./hello"],
+    output: {
+        path: path.resolve('build/js/'),
+        publicPath: '/public/assets/js/',
+        filename: "bundle.js"
+    },
+    devServer: {
+        contentBase: 'public'
+    },
+    resolve: {
+        extensions: ['', '.js']
+    }
+}
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>Example 03.</p>
+                        <h4>context</h4>
+                        <p>context: path.resolve('js')<br />set a relative root directory for the entry key, files will be looked up in the js directory</p>
+                        <h4>entry</h4>
+                        <p>Entry defines which files webpack needs to process</p>
+                        <h4>path</h4>
+                        <p>location where webpack will build the files</p>
+                        <h4>publicPath</h4>
+                        <p>location where webpack webserver serves files from, each request will be mapped to look up in build/js/</p>
+                        <h4>filename</h4>
+                        <p>Bundle name</p>
+                        <h4>devServer</h4>
+                        <p>Defines the root of the server</p>
+                        <h4>resolve</h4>
+                        <p>Resolve enables you to discard the file type from your require. E.g. require('./filename.js'), require('./filename')</p>
+                    </aside>
+                </section>
+
+            <!-- </section>
+
+            <section> -->
+
+                <section>
+                    <h2>Loaders</h2>
+                    <ul>
+                        <li>Loaders are pieces that transform files</li>
+                        <li>Used to teach webpack some new tricks</li>
+                        <li>Much like tasks in other build tools</li>
+                        <li>Preprocess files as you <code>require()</code> or "load" them</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Babel loader (ES6 - ES5)</h2>
+                    <pre><code data-trim>$ npm install babel-core babel-loader babel-preset-es2015 --save-dev
+</code></pre>
+                    <ul>
+                        <li><code>babel-preset-es2015</code> is required</li>
+                        <li><code>.babelrc</code> file required and must contain <code>{ "presets": ["es2015”] }</code></li>
+                        <li>filetype is <code>.es6</code> when using ES6 (ES2015)</li>
+                        <li>run in strict mode <code>'use strict'</code></li>
+                    </ul>
+
+                    <aside class="notes">
+                        <p>babel-preset-es2015: compiles ES2015 to ES5</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Integrating the Babel loader</h2>
+                    <pre><code data-trim>
+module: {
+    loaders: [
+        {
+            test: /\.es6$/,
+            exclude: /node_modules/,
+            loader: "babel-loader"
+        }
+    ]
+},
+resolve: {
+    extensions: ['', '.js', '.es6']
+}
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>Example 04</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Preloaders</h2>
+                    <ul>
+                        <li>Just like loaders but &hellip;</li>
+                        <li>Before executing your loaders</li>
+                        <li>Before building your bundles</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>JSHint</h2>
+                    <pre><code data-trim>
+$ npm install jshint jshint-loader --save-dev
+                    </code></pre>
+                    <ul>
+                        <li><code>.jshintrc</code> is required and contains <code>{}</code> by default </li>
+                    </ul>
+
+                    <aside class="notes">
+                        babel-preset-es2015: compiles ES2015 to ES5
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Integrating JSHint</h2>
+                    <pre><code data-trim>
+module: {
+    preLoaders: [
+        {
+            test: /\.js$/,
+            exclude: /node_modules/,
+            loader: "jshint-loader"
+        }
+    ]
+}
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>Example 04</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Plugins</h2>
+                    <ul>
+                        <li>Inject custom build steps (like a grunt task)</li>
+                        <li>Do things you can't do with loaders</li>
+                        <li>Work on the entire bundle</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Example: Provide jQuery</h2>
+                    <p>Install</p>
+                    <pre><code data-trim>
+$ npm install jquery --save
+                    </code></pre>
+                    <p>Make the jQuery object visible in every module, without requiring jQuery.</p>
+                    <pre><code data-trim>
+var webpack = require('webpack');
+plugins: [
+     new webpack.providePlugin({
+          $: “jquery",
+          jQuery: “jquery",
+          “window.jQuery”: “jquery"
+     })
+]
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2 style="font-size: 40px;">Example: Add banner (timestamp, &hellip;)</h2>
+                    <p>Install</p>
+                    <pre><code data-trim>
+$ npm install timestamp-webpack-plugin --save-dev
+                    </code></pre>
+                    <pre><code data-trim>
+var webpack = require('webpack');
+var TimestampWebpackPlugin = require('timestamp-webpack-plugin');
+plugins: [
+    new TimestampWebpackPlugin({
+        path: __dirname,
+        filename: 'timestamp.json'
+    }),
+
+    new webpack.BannerPlugin(“************\nGenerated by web pack\n***********\n")
+]
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Start scripts</h2>
+                    <p>No need to run <code>webpack jibber jabber</code> all the time</p>
+                    <p>Use <code>package.json</code> to define a start script</p>
+                    <pre><code data-trim>
+    "scripts": {
+        "start": "webpack-dev-server --inline"
+    }
+                    </code></pre>
+                    <p>Run</p>
+                    <pre><code data-trim>
+    $ npm start
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Production builds?</h2>
+                    <p>Separate config files</p>
+                    <p>Not easy to maintain</p>
+                    <p>Guaranteed headache</p>
+                </section>
+
+                <section>
+                    <h1>Right?</h1>
+                </section>
+
+                <section>
+                    <img src="img/configs.jpg" />
+                </section>
+
+                <section>
+                    <h2>Strip things</h2>
+                    <p>Strip things from your files before going to production</p>
+                    <pre><code data-trim>$ npm install strip-loader --save-dev</code></pre>
+                </section>
+
+                <section>
+                    <h2>Minimise + uglify</h2>
+                    <p>Built into webpack</p>
+                    <p>Use the <code>-p</code> flag</p>
+                    <pre><code data-trim>$ webpack -p</code></pre>
+                </section>
+
+                <section>
+                    <h2><code>webpack-production.config.js</code></h2>
+                    <pre><code data-trim>
+var WebpackStrip = require('strip-loader');
+var devConfig = require('./webpack.config.js');
+var stripLoader = {
+    test: [/\.js$/, /\.es6$/],
+    exclude: /node_modules/,
+    loader: WebpackStrip.loader('console.log', 'perfLog')
+}
+devConfig.module.loaders.push(stripLoader);
+module.exports = devConfig;
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Run it</h2>
+                    <pre><code data-trim>
+$ webpack --config webpack-production.config.js -p
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Script it</h2>
+                    <p>Add in <code>package.json</code></p>
+                    <pre><code data-trim>
+"scripts": {
+    "prod": "webpack --config webpack-production.config.js -p"
+}
+                    </code></pre>
+                    <p>Run</p>
+                    <pre><code data-trim>
+$ npm run prod
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>start and test are special values to npm. Others will need npm run or npm run-script.</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Debugging</h2>
+                    <p>Source maps</p>
+                    <pre><code data-trim>
+    $ webpack -d
+                    </code></pre>
+                    <p>Debugger statement</p>
+                    <pre><code data-trim>
+    debugger;
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>When adding the <code>debugger;</code> statement in a file, the browser will stop execution where this statement is present.</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Multiple bundles</h2>
+                    <ul>
+                        <li>Multiple HTML pages</li>
+                        <li>Lazy loading</li>
+                        <li>Resources per page</li>
+                    </ul>
+                </section>
+                <section>
+                    <h2>Multiple bundles</h2>
+                    <pre><code data-trim>
+module.exports = {
+    context: path.resolve('js'),
+    entry: {
+        about: './about_page.js',
+        home: './home_page.js',
+        contact: './contact_page.js'
+    },
+    output: {
+        filename: "[name].js"
+    }
+}
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Shared code</h2>
+                    <p>Using the <code>CommonsChunkPlugin</code> which generates an extra chunk, which contains common modules shared between entry points.</p>
+                    <pre><code data-trim>
+var webpack = require('webpack');
+var commonsPlugin = new webpack.optimize.CommonsChunkPlugin('shared.js');
+
+module.exports = {
+    context: path.resolve('js'),
+    entry: {
+        about: './about_page.js',
+        home: './home_page.js',
+        contact: './contact_page.js'
+    },
+    output: {
+        filename: "[name].js"
+    },
+    plugins: [
+        commonsPlugin
+    ]
+}
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Integrating styles</h2>
+                    <ul>
+                        <li><code>css-loader</code></li>
+                        <li><code>style-loader</code></li>
+                        <li>Require/import css files</li>
+                        <li>CSS integrated in bundle</li>
+                        <li>Less network requests</li>
+                        <li><code>css-loader</code> adds inline style tags in the head of the page</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Implement</h2>
+                    <p>Install node packages</p>
+                    <pre><code data-trim>
+npm install css-loader style-loader --save-dev
+                    </code></pre>
+                    <p>Add loader</p>
+                    <pre><code data-trim>
+{
+    test: /\.css$/,
+    exclude: /node_modules/,
+    loader: "style-loader!css-loader
+}
+                    </code></pre>
+                    <p>Require</p>
+                    <pre><code data-trim>
+import {} from '../css/default.css'
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>Exclamation mark means that when a CSS file is detected, webpack will run it first through css-loader and then style-loader.</p>
+                        <p>The CSS file will be inlined in the bundle. No extra request required.</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Using Sass or SCSS</h2>
+                    <p>Install node packages</p>
+                    <pre><code data-trim>
+npm install sass-loader --save-dev
+                    </code></pre>
+                    <p>Add loader</p>
+                    <pre><code data-trim>
+{
+    test: /\.css$/,
+    exclude: /node_modules/,
+    loader: "style-loader!css-loader!sass-loader
+}
+                    </code></pre>
+                    <p>Use by requiring .scss file</p>
+                </section>
+
+                <section>
+                    <h2>Using LESS</h2>
+                    <p>Install</p>
+                    <pre><code data-trim>
+npm install less-loader --save-dev
+                    </code></pre>
+                    <p>Add loader</p>
+                    <pre><code data-trim>
+{
+    test: /\.css$/,
+    exclude: /node_modules/,
+    loader: "style-loader!css-loader!less-loader
+}
+                    </code></pre>
+                    <p>Use by requiring .less file</p>
+                </section>
+
+                <section>
+                    <h2>Separate CSS bundles</h2>
+                    <p>Use separate files instead of inlined styles in the head.</p>
+                    <pre><code data-trim>
+npm install extract-text-webpack-plugin --save-dev
+                    </code></pre>
+                    <p>Include plugin and adapt <code>output</code> params</p>
+                    <pre><code data-trim>
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
+
+output: {
+    path: path.resolve('build/'), 
+    publicPath: '/public/assets/'
+}
+                    </code></pre>
+                    <p>Add plugin</p>
+                    <pre><code data-trim>
+plugins: [
+    new ExtractTextPlugin('styles.css')
+]
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Separate CSS bundles</h2>
+                    <p>Adapt loaders</p>
+                    <pre><code data-trim>
+{
+    test: /\.css$/,
+    exclude: /node_modules/,
+    loader: ExtractTextPlugin.extract("style-loader", "css-loader")
+},
+{
+    test: /\.scss$/,
+    exclude: /node_modules/,
+    loader: ExtractTextPlugin.extract("style-loader", "css-loader!sass-loader")
+}
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>When using CSS bundles, second parameter is used when creating a bundle to process the file. First parameter only used when not extracting css to a file, so embedding in head.</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Autoprefixer</h2>
+                    <p>Install</p>
+                    <pre><code data-trim>
+npm install autoprefixer-loader --save-dev
+                    </code></pre>
+                    <p>Adapt loader</p>
+                    <pre><code data-trim>
+{
+    test: /\.css$/,
+    exclude: /node_modules/,
+    loader: ExtractTextPlugin.extract("style-loader", "css-loader!autoprefixer-loader")
+},
+{
+    test: /\.scss$/,
+    exclude: /node_modules/,
+    loader: ExtractTextPlugin.extract("style-loader", "css-loader!autoprefixer-loader!sass-loader")
+}
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Images</h2>
+                    <p>Webpack can add images to your build</p>
+                    <p>Based on the limit, webpack will:</p>
+                    <ul>
+                        <li>Base64 encode inline the image</li>
+                        <li>Reference the image</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Images</h2>
+                    <p>Install</p>
+                    <pre><code data-trim>
+npm install url-loader --save-dev
+                    </code></pre>
+                    <p>Add the loader</p>
+                    <pre><code data-trim>
+{
+    test: /\.(png|jpg)$/,
+    exclude: /node_modules/,
+    loader: 'url-loader?limit=100000'
+}
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>Any image smaller than this 100kb will be base64 inlined. Otherwise separate image with separate request. Try to limit to 10kb. </p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Adding fonts</h2>
+                    <p>Also uses the <code>url-loader</code> loader.</p>
+                    <p>Add extensions to the loader</p>
+                    <pre><code data-trim>
+{
+    test: /\.(png|jpg|ttf|eot)$/,
+    exclude: /node_modules/,
+    loader: 'url-loader?limit=100000'
+}
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>Fonts also obey the limit parameter and will be inlined if possible</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Custom loaders</h2>
+                    <p>Install</p>
+                    <pre><code data-trim>$ npm install json-loader strip-json-comments --save-dev</code></pre>
+                    <p>Create file <code>strip.js</code> in <code>loaders</code> folder.</p>
+                    <pre><code data-trim>
+var stripComments = require('strip-json-comments');
+
+module.exports = function(source) {
+     this.cacheable();
+     console.log('source', source);
+     console.log('strippedSource', stripComments(source));
+     return stripComments(source);
+}
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>Create loader that strips comments out of JSON.</p>
+                        <p>Create loaders folder and create file strip.js. We will use the logic of the Node module strip-json-comments and wrap it in our loader.</p>
+                        <p>this.cacheale(); lets web pack know the loader is cacheable, which means, given the same input, will give the same output. </p>
+                    </aside>
+                </section>
+                <section>
+                    <h2>Custom loaders</h2>
+                    <p>Implement loader</p>
+                    <pre><code data-trim>
+loaders: [
+    {
+        test: /\.json$/,
+        exclude: node_modules,
+        loader: 'json_loader!' + path.resolve('loaders/strip')
+    }
+]
+                    </code></pre>
+                </section>
+
+            </section>
+
+            <section>
+                <section data-background="#DF6F0C">
+                    <h2 style="color: #fff;">Integration with AngularJS &amp; React</h2>
+                </section>
+
+                <section>
+                    <h2>AngularJS and webpack</h2>
+                    <p>AMD, CommonJS, ES6 are real module systems</p>
+                    <p>The Angular 1 way is not really module based</p>
+
+                    <aside class="notes">AMD, CommonJS, ES6 are real module systems where as the Angular 1 way is not really module based. So we need to use one of these.
+</aside>
+                </section>
+
+                <section>
+                    <h2>Get started</h2>
+                    <pre><code data-trim>
+$ npm install angular webpack babel-loader --save-dev
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Won't work</h2>
+                    <p>Webpack cannot use global module var like so</p>
+                    <pre><code data-trim>
+var app = angular.module('app', []);
+app.controller();
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Will work</h2>
+                    <pre><code data-trim>
+var angular = require('angular');
+var app = angular.module('app', []);
+angular.module('app').controller();
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>Last line is assuming we have our app declared somewhere else.</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Create a directive, factory, &hellip;</h2>
+                    <pre><code data-trim>
+module.exports = function(app) {
+     app.directive('helloWorld', function() {
+          return {
+               template: '<h1>Hello {{world}}</h1>'',
+               restrict: 'E',
+               controller: function($scope) {
+                    $scope.world = 'world!';
+               }
+          }
+     });
+}
+                    </code></pre>
+
+                    <aside class="notes">
+                         <p>The name of the app reference in module.exports = function(someReference) can be anything, since you send in a reference to a module previously declared.</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Include directive</h2>
+                    <pre><code data-trim>
+var angular = require('angular');
+var app = angular.module('app', []);
+require('./hello-world')(app);
+                    </code></pre>
+
+                    <aside class="notes">
+                         <p>app is the variable that references our Angular app. This is passed to the directive.</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Organising an AngularJS app</h2>
+                    <p><code>index.js</code> in subfolder</p>
+                    <pre><code data-trim>
+module.exports = function(app) {
+     require('./hello-world')(app);
+     require('./hello-jworks')(app);
+}
+                    </code></pre>
+                    <p>In <code>app.js</code></p>
+                    <pre><code data-trim>
+require('./bands')(app)
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>When using subfolders that contain multiple files create an index.js file. Require the path to the folder and webpack will search for index.js and load contents.</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Adding templates</h2>
+                    <p>Install</p>
+                    <pre><code data-trim>
+$ npm install raw-loader --save-dev
+                    </code></pre>
+                    <p>Add loader</p>
+                    <pre><code data-trim>
+{
+     test: /\.html$/,
+     exclude: /node_modules/
+     loader: 'raw-loader'
+}
+                    </code></pre>
+
+                    <aside class="notes">
+                        <p>When using templateUrl, templates won’t get served up, so they won’t be available when running the app. Instead we still use template but require it.</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Adding templates</h2>
+                    <pre><code data-trim>
+{
+    template: require('./hello-world.html')
+}
+                    </code></pre>
+
+                    <p>This way you can bundle the templates and prevent XHR requests.</p>
+
+                    <aside class="notes">
+                        <p>This way you can bundle the templates and prevent XHR requests.</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>React and webpack</h2>
+                    <p>Install</p>
+                    <pre><code data-trim>
+$ npm install react --save
+$ npm install babel-preset-react --save-dev
+                    </code></pre>
+                    <p>Add <code>.babelrc</code> file</p>
+                    <pre><code data-trim>
+{ "presets": ["es2015", "react"] }
+                    </code></pre>
+                    <p>Ready</p>
+                </section>
+            </section>
+
+            <!-- **********
+                DO NOT REMOVE
+            ********** -->
+            <section style="text-align: left;">
+                <h2>Thanks for watching!</h2>
+                <p class="fragment">Now kick some ass!</p>
+            </section>
+
+            <section style="text-align: left;" data-background="img/jworks-wallpaper-3.jpg">
+                <h2>&nbsp;</h2>
+            </section>
+        </div>
+    </div>
+    <script src="js/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            transition: 'convex',
+            center: true,
+            dependencies: [
+                // Cross-browser shim that fully implements classList - https://github.com/eligrey/classList.js/
+                {
+                    src: 'lib/js/classList.js',
+                    condition: function () {
+                        return !document.body.classList;
+                    }
+                },
+                // Interpret Markdown in <section> elements
+                {
+                    src: 'plugin/markdown/marked.js',
+                    condition: function() {
+                        return !!document.querySelector( '[data-markdown]' );
+                    }
+                },
+                {
+                    src: 'plugin/markdown/markdown.js',
+                    condition: function() {
+                        return !!document.querySelector( '[data-markdown]' );
+                    }
+                },
+                // Syntax highlight for <code> elements
+                {
+                    src: 'plugin/highlight/highlight.js',
+                    async: true,
+                    callback: function () {
+                        hljs.initHighlightingOnLoad();
+                    }
+                },
+                // Zoom in and out with Alt+click
+                {
+                    src: 'plugin/zoom-js/zoom.js',
+                    async: true
+                },
+                // Speaker notes
+                {
+                    src: 'plugin/notes/notes.js',
+                    async: true
+                }
+        ]
+        });
+    </script>
+</body>
+
+</html>
